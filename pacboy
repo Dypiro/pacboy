@@ -21,8 +21,18 @@ COLORS = {
 ASCII_ART = f"""{COLORS['pink']}
   ^~^  , 
  ('Y') ))
- /   \/ 
-(\||/){COLORS['end']} """
+ /   \\/ 
+(\\|||/){COLORS['end']} """
+
+# --- Custom Argument Parser ---
+
+class PacboyArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        if "invalid choice" in message:
+            invalid_command = message.split("'"')[1]
+            self.exit(2, f"{colorize('pacboy:', 'pink', bold=True)} {invalid_command} is an invalid command :( please choose from install, remove, search, update, and clean\n")
+        else:
+            super().error(message)
 
 # --- Helper Functions ---
 
@@ -43,7 +53,7 @@ def run_command(command, cwd=None):
     except subprocess.CalledProcessError as e:
         return e.returncode
     except KeyboardInterrupt:
-        print_message("Operation cancelled by user. >.<")
+        print_message("Operation cancelled by user. >.< ")
         return 1
 
 def levenshtein_distance(s1, s2):
@@ -255,7 +265,7 @@ def clean():
 # --- Main Function ---
 
 def main():
-    parser = argparse.ArgumentParser(
+    parser = PacboyArgumentParser(
         description=f"{colorize('pacboy', 'pink', bold=True)}{colorize(' - The cutest package manager for Arch Linux!', 'purple')}",
         formatter_class=argparse.RawTextHelpFormatter
     )
