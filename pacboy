@@ -1,0 +1,300 @@
+#!/usr/bin/env python3
+import argparse
+import subprocess
+import sys
+import re
+import curses
+import urllib.request
+import json
+
+# --- Theme Configuration ---
+
+COLORS = {
+    "pink": "\033[95m",
+    "purple": "\033[94m",
+    "light_blue": "\033[96m",
+    "bold": "\033[1m",
+    "underline": "\033[4m",
+    "end": "\033[0m",
+}
+
+ASCII_ART = f"""{COLORS['pink']}
+  ^~^  , 
+ ('Y') ))
+ /   \/ 
+(\||/){COLORS['end']} """
+
+# --- Helper Functions ---
+
+def colorize(text, color, bold=False):
+    """Applies a color and optional bold styling to the given text."""
+    style = f"{COLORS['bold']}" if bold else ""
+    return f"{style}{COLORS[color]}{text}{COLORS['end']}"
+
+def print_message(message):
+    """Prints a themed message."""
+    print(f"{colorize('pacboy:', 'pink', bold=True)} {message}")
+
+def run_command(command, cwd=None):
+    """Runs a shell command directly in the terminal."""
+    try:
+        process = subprocess.run(command, shell=True, check=True, cwd=cwd)
+        return process.returncode
+    except subprocess.CalledProcessError as e:
+        return e.returncode
+    except KeyboardInterrupt:
+        print_message("Operation cancelled by user. >.<")
+        return 1
+
+def levenshtein_distance(s1, s2):
+    if len(s1) > len(s2):
+        s1, s2 = s2, s1
+    distances = range(len(s1) + 1)
+    for i2, c2 in enumerate(s2):
+        distances_ = [i2 + 1]
+        for i1, c1 in enumerate(s1):
+            if c1 == c2:
+                distances_.append(distances[i1])
+            else:
+                distances_.append(1 + min((distances[i1], distances[i1 + 1], distances_[-1])))
+        distances = distances_
+    return distances[-1]
+
+def find_closest_package(query):
+    """Finds the closest package name to a query."""
+    print_message("Finding the closest package name...")
+    try:
+        pacman_output = subprocess.check_output("pacman -Slq", shell=True, text=True).splitlines()
+        closest_package = None
+        min_distance = 3
+        for package in pacman_output:
+            distance = levenshtein_distance(query, package)
+            if distance < min_distance:
+                min_distance = distance
+                closest_package = package
+        return closest_package
+    except subprocess.CalledProcessError:
+        return None
+
+# --- Pacman Commands ---
+
+def install(packages):
+    """Installs one or more packages, handling official and AUR packages."""
+    print_message(f"Analyzing packages... {colorize(', '.join(packages), 'light_blue')}")
+    official_packages = []
+    aur_packages = []
+
+    for package in packages:
+        try:
+            subprocess.check_output(f"pacman -Si {package}", shell=True, stderr=subprocess.DEVNULL)
+            official_packages.append(package)
+        except subprocess.CalledProcessError:
+            aur_packages.append(package)
+
+    if official_packages:
+        print_message(f"Installing official packages: {colorize(', '.join(official_packages), 'light_blue')}")
+        command = f"sudo pacman -S {' '.join(official_packages)}"
+        if run_command(command) != 0:
+            print_message(f"Failed to install some official packages. ;-;")
+
+    if aur_packages:
+        print_message(f"Installing AUR packages: {colorize(', '.join(aur_packages), 'light_blue')}")
+        for package in aur_packages:
+            install_aur_package(package)
+
+def install_aur_package(package):
+    """Installs a single AUR package."""
+    print_message(f"Installing {colorize(package, 'pink')} from the AUR...")
+    try:
+        url = f"https://aur.archlinux.org/rpc/v5/info?arg[]={package}"
+        with urllib.request.urlopen(url) as response:
+            data = json.loads(response.read())
+            if not data['results']:
+                print_message(f"Could not find {colorize(package, 'pink')} in the AUR. ;-;\n")
+                return
+            
+            package_base = data['results'][0]['PackageBase']
+            clone_url = f"https://aur.archlinux.org/{package_base}.git"
+            clone_dir = f"/tmp/{package_base}"
+
+            print_message(f"Cloning {colorize(package_base, 'light_blue')}...")
+            run_command(f"git clone {clone_url} {clone_dir}")
+
+            print_message(f"Building and installing {colorize(package, 'pink')}...")
+            if run_command("makepkg -si", cwd=clone_dir) == 0:
+                print_message(f"Successfully installed {colorize(package, 'pink')}! ^-^")
+            else:
+                print_message(f"Failed to build or install {colorize(package, 'pink')}. ;-;\n")
+
+            run_command(f"rm -rf {clone_dir}") # Clean up
+
+    except Exception as e:
+        print_message(f"An error occurred while installing {colorize(package, 'pink')}: {e}")
+
+def remove(packages):
+    """Removes one or more packages."""
+    print_message(f"Time to say goodbye to {colorize(', '.join(packages), 'light_blue')}...")
+    command = f"sudo pacman -R {' '.join(packages)}"
+    if run_command(command) == 0:
+        print_message(f"Removed {colorize(', '.join(packages), 'light_blue')}. All clean!~")
+    else:
+        print_message(f"Couldn't remove the package. Maybe it's already gone? o.O")
+
+def search_interactive(stdscr, results, selected):
+    curses.curs_set(0)
+    curses.init_pair(1, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_CYAN, curses.COLOR_BLACK)
+    current_pos = 0
+
+    while True:
+        stdscr.clear()
+        stdscr.addstr(0, 0, colorize("Select packages to install with SPACE, press ENTER to install", 'purple'))
+        for i, result in enumerate(results):
+            if i == current_pos:
+                stdscr.attron(curses.A_REVERSE)
+            
+            prefix = "[x]" if i in selected else "[ ]"
+            aur_tag = colorize("[AUR]", 'purple') if result.get('is_aur') else ""
+            stdscr.addstr(i + 2, 0, f"{prefix} {aur_tag} {result['name']}")
+            
+            if i == current_pos:
+                stdscr.attroff(curses.A_REVERSE)
+
+        key = stdscr.getch()
+
+        if key == curses.KEY_UP:
+            current_pos = max(0, current_pos - 1)
+        elif key == curses.KEY_DOWN:
+            current_pos = min(len(results) - 1, current_pos + 1)
+        elif key == ord(' '):
+            if current_pos in selected:
+                selected.remove(current_pos)
+            else:
+                selected.add(current_pos)
+        elif key == ord('\n'):
+            return [results[i]['name'] for i in selected]
+        elif key == ord('q'):
+            return []
+
+def search(query):
+    """Searches for packages from official repos and the AUR."""
+    print_message(f"Searching for packages like {colorize(query, 'light_blue')}...")
+    processed_results = []
+
+    # Search official repositories
+    try:
+        command = f"pacman -Ss {query}"
+        output = subprocess.check_output(command, shell=True, text=True).strip()
+        results = output.split('\n') if output else []
+        for i in range(0, len(results), 2):
+            name_line = results[i]
+            desc_line = results[i+1] if i+1 < len(results) else ""
+            match = re.match(r'(.*?)/(.*?) (.*)', name_line)
+            if match:
+                repo, name, version = match.groups()
+                processed_results.append({'name': name, 'version': version, 'desc': desc_line.strip(), 'is_aur': False})
+    except subprocess.CalledProcessError:
+        pass
+
+    # Search AUR
+    try:
+        url = f"https://aur.archlinux.org/rpc/v5/search/{query}"
+        with urllib.request.urlopen(url) as response:
+            data = json.loads(response.read())
+            for result in data['results']:
+                processed_results.append({'name': result['Name'], 'version': result['Version'], 'desc': result['Description'], 'is_aur': True})
+    except Exception as e:
+        print_message(f"Could not search the AUR: {e}")
+
+    if not processed_results:
+        print_message(f"Couldn't find any packages matching {colorize(query, 'light_blue')}. ;-;")
+        # 'Did you mean' logic can be added here if desired
+        return
+
+    selected_packages = curses.wrapper(search_interactive, processed_results, set())
+
+    if selected_packages:
+        install(selected_packages)
+
+def update():
+    """Updates the system."""
+    print_message("Let's get your system all shiny and new!~")
+    print(ASCII_ART)
+    command = "sudo pacman -Syu"
+    if run_command(command) == 0:
+        print_message("System updated! You're all set. ^_^")
+    else:
+        print_message("An error occurred during the update. Please check the output. :(")
+
+def clean():
+    """Finds and removes orphan packages."""
+    print_message("Let's tidy up your system and remove some orphan packages!~")
+    try:
+        orphans = subprocess.check_output("pacman -Qtdq", shell=True, text=True).splitlines()
+        if not orphans:
+            print_message("Your system is already clean! No orphan packages found. <3")
+            return
+        
+        print_message("Found the following orphan packages:")
+        for orphan in orphans:
+            print(f"  - {colorize(orphan, 'light_blue')}")
+        
+        user_input = input(f"\n{colorize('Do you want to remove them all? (y/n)', 'purple')} ").lower()
+        if user_input == 'y':
+            command = f"sudo pacman -Rns {' '.join(orphans)}"
+            if run_command(command) == 0:
+                print_message("Orphans removed! Your system is sparkling now. ^-^")
+            else:
+                print_message("Something went wrong while removing the orphans. ;-;")
+        else:
+            print_message("Okay, I'll leave them for now. :)")
+
+    except subprocess.CalledProcessError:
+        print_message("Your system is already clean! No orphan packages found. <3")
+
+# --- Main Function ---
+
+def main():
+    parser = argparse.ArgumentParser(
+        description=f"{colorize('pacboy', 'pink', bold=True)}{colorize(' - The cutest package manager for Arch Linux!', 'purple')}",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    subparsers = parser.add_subparsers(dest="command", help=f"{colorize('Available commands', 'purple')}")
+
+    # Install command
+    install_parser = subparsers.add_parser("install", help=f"Install one or more {colorize('packages', 'pink')}.")
+    install_parser.add_argument("packages", nargs="+", help="The package(s) to install.")
+
+    # Remove command
+    remove_parser = subparsers.add_parser("remove", help=f"Remove one or more {colorize('packages', 'pink')}.")
+    remove_parser.add_argument("packages", nargs="+", help="The package(s) to remove.")
+
+    # Search command
+    search_parser = subparsers.add_parser("search", help=f"Search for {colorize('packages', 'pink')} interactively.")
+    search_parser.add_argument("query", help="The package to search for.")
+
+    # Update command
+    update_parser = subparsers.add_parser("update", help=f"Update all {colorize('packages', 'pink')} on the system.")
+
+    # Clean command
+    clean_parser = subparsers.add_parser("clean", help=f"Remove all {colorize('orphan packages', 'pink')}.")
+
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        return
+
+    args = parser.parse_args()
+
+    if args.command == "install":
+        install(args.packages)
+    elif args.command == "remove":
+        remove(args.packages)
+    elif args.command == "search":
+        search(args.query)
+    elif args.command == "update":
+        update()
+    elif args.command == "clean":
+        clean()
+
+if __name__ == "__main__":
+    main()
