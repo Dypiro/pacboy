@@ -1,105 +1,54 @@
-# pacboy - the cutest package manager for Arch Linux! 🎀
+# pacboy
 
-<p align="center">
-  <samp>
-  ^~^  , 
- ('Y') ))
- /   \/
-(\|||/)
-</samp>
-</p>
+Pacboy is a cute and interactive command-line package manager for Arch Linux, designed to simplify `pacman` and AUR operations with a friendly interface.
 
-Welcome to `pacboy`, the package manager that's not only powerful but also adorable! `pacboy` is a wrapper for `pacman` that makes managing packages on Arch Linux a more fun and user-friendly experience.
+## Features
 
-## Features ✨
+*   **Interactive Search:** Search for packages from official repositories and the AUR with an interactive `curses`-based interface.
+*   **Install:** Install official and AUR packages.
+*   **Remove:** Remove installed packages.
+*   **Update:** Update your entire system.
+*   **Clean:** Remove orphan packages.
+*   **Themed Output:** Colorful and cute output messages.
 
-*   **Cute & Colorful Interface:** A unique personality with cute messages and a pink, purple, and light blue theme.
-*   **Unified Search:** Search both the official repositories and the AUR at the same time.
-*   **AUR Support:** `pacboy` is a full-featured AUR helper! It can install packages from the AUR for you.
-*   **Interactive Search:** A menu-based search where you can select packages to install directly from the results.
-*   **Simplified Commands:** Easy-to-remember commands like `install`, `remove`, `update`, and `clean`.
-*   **Orphan Package Cleaning:** The `clean` command helps you keep your system tidy by removing unnecessary packages.
-*   **"Did you mean?" Suggestions:** `pacboy` helps you find what you're looking for, even if you make a typo.
+## Installation
 
-## Installation 💻
+To install `pacboy`:
 
-### Recommended Method (with install.sh)
-
-1.  **Clone the repository:**
-
+1.  Clone the GitHub repository:
     ```bash
-    git clone https://github.com/viztini/pacboy.com.git
+    git clone https://github.com/yourusername/pacboy.git # Replace yourusername
     ```
-
-2.  **Navigate into the directory:**
-
+2.  Change into the project directory:
     ```bash
-    cd pacboy.com
+    cd pacboy
     ```
-
-3.  **Run the installer:**
-
+3.  Run the installation script:
     ```bash
-    chmod +x install.sh
     ./install.sh
     ```
 
-    The script will check for dependencies and install `pacboy` for you. <3
+This script will:
 
-### Manual Installation
+1.  Copy the `pacboy` script to `~/.local/bin/`.
+2.  Make the `pacboy` script executable.
 
-1.  **Install dependencies:**
+## Usage
 
-    `pacboy` needs `git` and `python` to be installed.
+After installation, you can run `pacboy` from any terminal:
 
-    ```bash
-    sudo pacman -S git python
-    ```
+```bash
+pacboy <command> [arguments]
+```
 
-2.  **Make `pacboy` executable:**
+### Available Commands:
 
-    ```bash
-    chmod +x pacboy
-    ```
+*   `pacboy install <package(s)>`: Install one or more packages.
+*   `pacboy remove <package(s)>`: Remove one or more packages.
+*   `pacboy search <query>`: Search for packages interactively.
+*   `pacboy update`: Update all packages on the system.
+*   `pacboy clean`: Remove all orphan packages.
 
-3.  **Move `pacboy` to your PATH:**
+## Contributing
 
-    ```bash
-    sudo mv pacboy /usr/local/bin/
-    ```
-
-## Usage 📖
-
-*   **Install packages (from official repos or AUR):**
-
-    ```bash
-    pacboy install <package1> <package2>
-    ```
-
-*   **Remove packages:**
-
-    ```bash
-    pacboy remove <package1> <package2>
-    ```
-
-*   **Update your system:**
-
-    ```bash
-    pacboy update
-    ```
-
-*   **Search for packages (including AUR) interactively:**
-
-    ```bash
-    pacboy search <query>
-    ```
-
-*   **Clean up orphan packages:**
-
-    ```bash
-    pacboy clean
-    ```
-
----
-
-Made with <3
+Feel free to contribute to this project by submitting pull requests or opening issues.

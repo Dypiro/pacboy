@@ -155,17 +155,50 @@ def search_interactive(stdscr, results, selected):
 
     while True:
         stdscr.clear()
-        stdscr.addstr(0, 0, colorize("Select packages to install with SPACE, press ENTER to install", 'purple'))
-        for i, result in enumerate(results):
+        h, w = stdscr.getmaxyx() # Get current window dimensions
+
+        # Display header
+        header_text = colorize("Select packages to install with SPACE, press ENTER to install", 'purple')
+        try:
+            stdscr.addstr(0, 0, header_text[:w-1]) # Truncate header if too long
+        except curses.error:
+            pass # Ignore error if header can't be drawn
+
+        # Display results
+        display_start = max(0, current_pos - (h // 2) + 1) # Center current_pos
+        display_end = min(len(results), display_start + h - 2) # -2 for header and potential footer
+
+        for i in range(display_start, display_end):
+            result = results[i]
+            line_num = i - display_start + 2 # +2 to account for header
+
             if i == current_pos:
                 stdscr.attron(curses.A_REVERSE)
             
             prefix = "[x]" if i in selected else "[ ]"
             aur_tag = colorize("[AUR]", 'purple') if result.get('is_aur') else ""
-            stdscr.addstr(i + 2, 0, f"{prefix} {aur_tag} {result['name']}")
             
+            # Construct the line and truncate if it's too long for the terminal width
+            display_line = f"{prefix} {aur_tag} {result['name']}"
+            
+            try:
+                stdscr.addstr(line_num, 0, display_line[:w-1])
+            except curses.error:
+                pass # Ignore error if line can't be drawn
+
             if i == current_pos:
                 stdscr.attroff(curses.A_REVERSE)
+
+        # Display scroll indicator if needed
+        if len(results) > (h - 2):
+            if current_pos > (h // 2) - 1 and current_pos < len(results) - (h // 2):
+                try:
+                    stdscr.addstr(h-1, w-10, f"--- {current_pos+1}/{len(results)} ---")
+                except curses.error:
+                    pass # Ignore error if scroll indicator can't be drawn
+
+
+        stdscr.refresh() # Refresh the screen after all drawing operations
 
         key = stdscr.getch()
 
@@ -182,6 +215,10 @@ def search_interactive(stdscr, results, selected):
             return [results[i]['name'] for i in selected]
         elif key == ord('q'):
             return []
+        elif key == curses.KEY_RESIZE: # Handle terminal resize event
+            h, w = stdscr.getmaxyx()
+            stdscr.clear()
+            stdscr.refresh()
 
 def search(query):
     """Searches for packages from official repos and the AUR."""
