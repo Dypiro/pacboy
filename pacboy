@@ -18,21 +18,18 @@ COLORS = {
     "end": "\033[0m",
 }
 
-ASCII_ART = f"""{COLORS['pink']}
-  ^~^  , 
- ('Y') ))
- /   \\/ 
-(\\|||/){COLORS['end']} """
+ASCII_ART = ""
 
 # --- Custom Argument Parser ---
 
 class PacboyArgumentParser(argparse.ArgumentParser):
     def error(self, message):
         if "invalid choice" in message:
-            invalid_command = message.split("'"')[1]
-            self.exit(2, f"{colorize('pacboy:', 'pink', bold=True)} {invalid_command} is an invalid command :( please choose from install, remove, search, update, and clean\n")
-        else:
-            super().error(message)
+            match = re.search(r"'(.*?)'", message)
+            if match:
+                invalid_command = match.group(1)
+                self.exit(2, f"{colorize('pacboy:', 'pink', bold=True)} {invalid_command} is an invalid command :( please choose from install, remove, search, update, and clean\n")
+        super().error(message)
 
 # --- Helper Functions ---
 
@@ -53,7 +50,7 @@ def run_command(command, cwd=None):
     except subprocess.CalledProcessError as e:
         return e.returncode
     except KeyboardInterrupt:
-        print_message("Operation cancelled by user. >.< ")
+        print_message("Operation cancelled by user. >.<")
         return 1
 
 def levenshtein_distance(s1, s2):
@@ -120,7 +117,7 @@ def install_aur_package(package):
         with urllib.request.urlopen(url) as response:
             data = json.loads(response.read())
             if not data['results']:
-                print_message(f"Could not find {colorize(package, 'pink')} in the AUR. ;-;\n")
+                print_message(f"Could not find {colorize(package, 'pink')} in the AUR. ;-;")
                 return
             
             package_base = data['results'][0]['PackageBase']
@@ -134,7 +131,7 @@ def install_aur_package(package):
             if run_command("makepkg -si", cwd=clone_dir) == 0:
                 print_message(f"Successfully installed {colorize(package, 'pink')}! ^-^")
             else:
-                print_message(f"Failed to build or install {colorize(package, 'pink')}. ;-;\n")
+                print_message(f"Failed to build or install {colorize(package, 'pink')}. ;-;")
 
             run_command(f"rm -rf {clone_dir}") # Clean up
 
