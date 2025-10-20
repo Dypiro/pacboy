@@ -2,7 +2,11 @@
 
 <p align="center">
   <samp>
-  </samp>
+  ^~^  , 
+ ('Y') ))
+ /   \/
+(\|||/)
+</samp>
 </p>
 
 Welcome to `pacboy`, the package manager that's not only powerful but also adorable! `pacboy` is a wrapper for `pacman` that makes managing packages on Arch Linux a more fun and user-friendly experience.
@@ -19,41 +23,50 @@ Welcome to `pacboy`, the package manager that's not only powerful but also adora
 
 ## Installation 💻
 
-1.  **Install dependencies:**
+### Recommended Method (with install.sh)
 
-    `pacboy` needs `git` to be installed to download packages from the AUR.
-
-    ```bash
-    sudo pacman -S git
-    ```
-
-2.  **Clone the repository:**
+1.  **Clone the repository:**
 
     ```bash
     git clone https://github.com/viztini/pacboy.com.git
     ```
 
-3.  **Navigate into the directory:**
+2.  **Navigate into the directory:**
 
     ```bash
     cd pacboy.com
     ```
 
-4.  **Make `pacboy` executable:**
+3.  **Run the installer:**
+
+    ```bash
+    chmod +x install.sh
+    ./install.sh
+    ```
+
+    The script will check for dependencies and install `pacboy` for you. <3
+
+### Manual Installation
+
+1.  **Install dependencies:**
+
+    `pacboy` needs `git` and `python` to be installed.
+
+    ```bash
+    sudo pacman -S git python
+    ```
+
+2.  **Make `pacboy` executable:**
 
     ```bash
     chmod +x pacboy
     ```
 
-5.  **Move `pacboy` to your PATH:**
-
-    For easy access from anywhere, move `pacboy` to a directory in your system's `PATH`.
+3.  **Move `pacboy` to your PATH:**
 
     ```bash
     sudo mv pacboy /usr/local/bin/
     ```
-
-    And you're all set! `pacboy` is now installed.
 
 ## Usage 📖
 
