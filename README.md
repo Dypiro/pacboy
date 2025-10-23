@@ -15,9 +15,9 @@ Pacboy is a cute and interactive command-line package manager for Arch Linux, de
 
 To install `pacboy`:
 
-1.  Clone the GitHub repository:
+1.  Clone the GitHub repository or download as zip:
     ```bash
-    git clone https://github.com/yourusername/pacboy.git # Replace yourusername
+    git clone https://github.com/viztini/pacboy.git
     ```
 2.  Change into the project directory:
     ```bash
