@@ -1,6 +1,6 @@
-# pacboy
+# pacboy, the cutest arch linux package manager 🎀
 
-Pacboy is a cute and interactive command-line package manager for Arch Linux, designed to simplify `pacman` and AUR operations with a friendly interface.
+pacboy is a cute and interactive command-line package manager for Arch Linux, designed to simplify `pacman` and AUR operations with a friendly interface.
 
 ## Features
 
