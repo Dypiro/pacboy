@@ -275,13 +275,13 @@ def update():
     """Updates the system."""
     print_message("Let's get your system all shiny and new!~")
     print(ASCII_ART)
-    command = "sudo pacman --noconfirm -Syu"
+    command = "sudo pacman -Syu"
     if run_command(command) == 0:
         print_message("System updated! You're all set. ^_^")
     else:
         print_message("An error occurred during the update. Please check the output. :(")
 
-def clean():
+def cleano():
     """Finds and removes orphan packages."""
     print_message("Let's tidy up your system and remove some orphan packages!~")
     try:
@@ -295,7 +295,7 @@ def clean():
             print(f"  - {colorize(orphan, 'light_blue')}")
         user_input = input(f"\n{colorize('Do you want to remove them all? (y/n)', 'purple')} ").lower()
         if user_input == 'y':
-            command = f"sudo pacman -Rns {' '.join(orphans)}"
+            command = f"sudo pacman --noconfirm -Rns {' '.join(orphans)}"
             if run_command(command) == 0:
                 print_message("Orphans removed! Your system is sparkling now. ^-^")
             else:
@@ -305,6 +305,17 @@ def clean():
 
     except subprocess.CalledProcessError:
         print_message("Your system is already clean! No orphan packages found. <3")
+
+def clean():
+    """Find and removes pacman cache"""
+    print_message("Let's tidy up your system and remove some left over cache!~")
+    confirm()
+    command = "sudo pacman --noconfirm -Sc"
+    if run_command(command) == 0:
+        print_message("Cache cleaned! Your system is sparkling now. ^_^")
+    else:
+        print_message("An error occurred while cleaning cache. Please check the output. :(")
+
 
 # --- Main Function ---
 
@@ -330,8 +341,12 @@ def main():
     # Update command
     update_parser = subparsers.add_parser("update", help=f"Update all {colorize('packages', 'pink')} on the system.")
 
+    # Cleano command
+    clean_parser = subparsers.add_parser("cleano", help=f"Remove all {colorize('orphan packages', 'pink')}.")
+
     # Clean command
-    clean_parser = subparsers.add_parser("clean", help=f"Remove all {colorize('orphan packages', 'pink')}.")
+    clean_parser = subparsers.add_parser("clean", help=f"Clean all {colorize('cache', 'pink')}.")
+
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -347,6 +362,8 @@ def main():
         search(args.query)
     elif args.command == "update":
         update()
+    elif args.command == "cleano":
+        cleano()
     elif args.command == "clean":
         clean()
 
