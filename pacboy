@@ -35,9 +35,7 @@ class PacboyArgumentParser(argparse.ArgumentParser):
 
 def confirm():
     confirmation = input(f"{colorize('Proceed? (y/n)', 'purple')} ")
-    if confirmation == "yes" or confirmation == "YES" or confirmation == "ye" or confirmation == "YE" or confirmation == "y" or confirmation == "Y":
-        pass
-    else:
+    if confirmation.lower() not in {'y', 'ye', 'yes'}:
         print(f"{colorize('Aborted by user. ;-;', 'pink')}")
         exit()
 
@@ -283,7 +281,7 @@ def search(query):
         install(selected_packages)
 
 def update():
-    """Updates the system."""
+    # Updates the system.
     print_message("Let's get your system all shiny and new!~")
     print(ASCII_ART)
     command = "sudo pacman -Syu"
@@ -293,7 +291,7 @@ def update():
         print_message("An error occurred during the update. Please check the output. :(")
 
 def cleano():
-    """Finds and removes orphan packages."""
+    # Finds and removes orphan packages.
     print_message("Let's tidy up your system and remove some orphan packages!~")
     try:
         orphans = subprocess.check_output("pacman -Qtdq", shell=True, text=True).splitlines()
@@ -312,7 +310,7 @@ def cleano():
             else:
                 print_message("Something went wrong while removing the orphans. ;-;")
         else:
-            print_message("Okay, I'll leave them for now. :)")
+            print_message("Okay, I'll leave them for now. =^.^=")
 
     except subprocess.CalledProcessError:
         print_message("Your system is already clean! No orphan packages found. <3")
@@ -325,7 +323,7 @@ def clean():
     if run_command(command) == 0:
         print_message("Cache cleaned! Your system is sparkling now. ^_^")
     else:
-        print_message("An error occurred while cleaning cache. Please check the output. :(")
+        print_message("An error occurred while cleaning cache. Please check the output. -_-;")
 
 
 # --- Main Function ---
@@ -348,7 +346,6 @@ def main():
     # Fremove command
     remove_parser = subparsers.add_parser("fremove", help=f"Remove one or more {colorize('packages forcefully', 'pink')}.")
     remove_parser.add_argument("packages", nargs="+", help="The package(s) to remove.")
-
 
     # Search command
     search_parser = subparsers.add_parser("search", help=f"Search for {colorize('packages', 'pink')} interactively.")
