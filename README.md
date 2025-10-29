@@ -23,7 +23,11 @@ To install `pacboy`:
     ```bash
     cd pacboy
     ```
-3.  Run the installation script:
+3. Make the script executable
+   ```bash
+   chmod +x install.sh
+   ```
+4.  Run the installation script:
     ```bash
     ./install.sh
     ```
