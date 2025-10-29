@@ -54,6 +54,14 @@ pacboy <command> [arguments]
 *   `pacboy clean`: Purge pacman cache.
 *   `pacboy cleano`: Remove orphan packages.
 
+## Zsh Compatibility
+
+`pacboy` works seamlessly with Zsh. After installation, ensure that `~/.local/bin` is in your `PATH`. If it's not already, add the following line to your `.zshrc` file:
+
+```zsh
+export PATH="$HOME/.local/bin:$PATH"
+```
+
 ## Contributing
 
 Feel free to contribute to this project by submitting pull requests or opening issues.
