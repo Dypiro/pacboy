@@ -9,4 +9,4 @@ cp ./pacboy ~/.local/bin/pacboy
 # Make it executable
 chmod +x ~/.local/bin/pacboy
 
-echo "pacboy installed successfully!"
+echo "pacboy installed successfully! Have fun~ 🎀"
