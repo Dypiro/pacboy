@@ -272,7 +272,7 @@ def search(query):
         install(selected_packages)
 
 def update():
-    """Updates the system."""
+    # Updates the system.
     print_message("Let's get your system all shiny and new!~")
     print(ASCII_ART)
     command = "sudo pacman -Syu"
@@ -282,7 +282,7 @@ def update():
         print_message("An error occurred during the update. Please check the output. :(")
 
 def cleano():
-    """Finds and removes orphan packages."""
+    # Finds and removes orphan packages.
     print_message("Let's tidy up your system and remove some orphan packages!~")
     try:
         orphans = subprocess.check_output("pacman -Qtdq", shell=True, text=True).splitlines()
@@ -314,7 +314,7 @@ def clean():
     if run_command(command) == 0:
         print_message("Cache cleaned! Your system is sparkling now. ^_^")
     else:
-        print_message("An error occurred while cleaning cache. Please check the output. :(")
+        print_message("An error occurred while cleaning cache. Please check the output. -_-;")
 
 
 # --- Main Function ---
