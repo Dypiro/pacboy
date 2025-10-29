@@ -301,7 +301,7 @@ def cleano():
             else:
                 print_message("Something went wrong while removing the orphans. ;-;")
         else:
-            print_message("Okay, I'll leave them for now. :)")
+            print_message("Okay, I'll leave them for now. =^.^=")
 
     except subprocess.CalledProcessError:
         print_message("Your system is already clean! No orphan packages found. <3")
