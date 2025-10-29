@@ -45,9 +45,11 @@ pacboy <command> [arguments]
 
 *   `pacboy install <package(s)>`: Install one or more packages.
 *   `pacboy remove <package(s)>`: Remove one or more packages.
+*   `pacboy fremove <package(s)>`: Remove one or more packages forcefully.
 *   `pacboy search <query>`: Search for packages interactively.
 *   `pacboy update`: Update all packages on the system.
-*   `pacboy clean`: Remove all orphan packages.
+*   `pacboy oclean`: Remove all orphan packages.
+*   `pacboy clean`: Clean cache.
 
 ## Contributing
 
