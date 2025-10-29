@@ -158,6 +158,17 @@ def remove(packages):
     else:
         print_message(f"Couldn't remove the package. Maybe it's already gone? o.O")
 
+def fremove(packages):
+    """Force removes one or more packages. May break the system"""
+    print_message(f"Time to say goodbye to {colorize(', '.join(packages), 'light_blue')}...")
+    print_message(f"{colorize('MAY BREAK THE SYSTEM IF FORCEFULLY REMOVED','pink')}")
+    confirm()
+    command = f"sudo pacman -Rdd --noconfirm {' '.join(packages)}"
+    if run_command(command) == 0:
+        print_message(f"Removed {colorize(', '.join(packages), 'light_blue')}. All clean!~")
+    else:
+        print_message(f"Couldn't remove the package. Maybe it's already gone? o.O")
+
 def search_interactive(stdscr, results, selected):
     curses.curs_set(0)
     curses.init_pair(1, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
@@ -334,6 +345,11 @@ def main():
     remove_parser = subparsers.add_parser("remove", help=f"Remove one or more {colorize('packages', 'pink')}.")
     remove_parser.add_argument("packages", nargs="+", help="The package(s) to remove.")
 
+    # Fremove command
+    remove_parser = subparsers.add_parser("fremove", help=f"Remove one or more {colorize('packages forcefully', 'pink')}.")
+    remove_parser.add_argument("packages", nargs="+", help="The package(s) to remove.")
+
+
     # Search command
     search_parser = subparsers.add_parser("search", help=f"Search for {colorize('packages', 'pink')} interactively.")
     search_parser.add_argument("query", help="The package to search for.")
@@ -358,6 +374,8 @@ def main():
         install(args.packages)
     elif args.command == "remove":
         remove(args.packages)
+    elif args.command == "fremove":
+        fremove(args.packages)
     elif args.command == "search":
         search(args.query)
     elif args.command == "update":
