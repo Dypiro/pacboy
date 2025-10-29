@@ -51,7 +51,8 @@ pacboy <command> [arguments]
 *   `pacboy remove <package(s)>`: Remove one or more packages.
 *   `pacboy search <query>`: Search for packages interactively.
 *   `pacboy update`: Update all packages on the system.
-*   `pacboy clean`: Remove all orphan packages.
+*   `pacboy clean`: Purge pacman cache.
+*   `pacboy cleano`: Remove orphan packages.
 
 ## Contributing
 
