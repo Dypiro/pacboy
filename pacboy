@@ -33,6 +33,14 @@ class PacboyArgumentParser(argparse.ArgumentParser):
 
 # --- Helper Functions ---
 
+def confirm():
+    confirmation = input(f"{colorize('Proceed? (y/n)', 'purple')} ")
+    if confirmation == "yes" or confirmation == "YES" or confirmation == "ye" or confirmation == "YE" or confirmation == "y" or confirmation == "Y":
+        pass
+    else:
+        print(f"{colorize('Aborted by user. ;-;', 'pink')}")
+        exit()
+
 def colorize(text, color, bold=False):
     """Applies a color and optional bold styling to the given text."""
     style = f"{COLORS['bold']}" if bold else ""
@@ -100,7 +108,8 @@ def install(packages):
 
     if official_packages:
         print_message(f"Installing official packages: {colorize(', '.join(official_packages), 'light_blue')}")
-        command = f"sudo pacman -S {' '.join(official_packages)}"
+        confirm()
+        command = f"sudo pacman -S --noconfirm {' '.join(official_packages)}"
         if run_command(command) != 0:
             print_message(f"Failed to install some official packages. ;-;")
 
@@ -112,6 +121,7 @@ def install(packages):
 def install_aur_package(package):
     """Installs a single AUR package."""
     print_message(f"Installing {colorize(package, 'pink')} from the AUR...")
+    confirm()
     try:
         url = f"https://aur.archlinux.org/rpc/v5/info?arg[]={package}"
         with urllib.request.urlopen(url) as response:
@@ -141,7 +151,8 @@ def install_aur_package(package):
 def remove(packages):
     """Removes one or more packages."""
     print_message(f"Time to say goodbye to {colorize(', '.join(packages), 'light_blue')}...")
-    command = f"sudo pacman -R {' '.join(packages)}"
+    confirm()
+    command = f"sudo pacman -R --noconfirm {' '.join(packages)}"
     if run_command(command) == 0:
         print_message(f"Removed {colorize(', '.join(packages), 'light_blue')}. All clean!~")
     else:
@@ -270,7 +281,7 @@ def update():
     else:
         print_message("An error occurred during the update. Please check the output. :(")
 
-def clean():
+def cleano():
     """Finds and removes orphan packages."""
     print_message("Let's tidy up your system and remove some orphan packages!~")
     try:
@@ -282,10 +293,9 @@ def clean():
         print_message("Found the following orphan packages:")
         for orphan in orphans:
             print(f"  - {colorize(orphan, 'light_blue')}")
-        
         user_input = input(f"\n{colorize('Do you want to remove them all? (y/n)', 'purple')} ").lower()
         if user_input == 'y':
-            command = f"sudo pacman -Rns {' '.join(orphans)}"
+            command = f"sudo pacman --noconfirm -Rns {' '.join(orphans)}"
             if run_command(command) == 0:
                 print_message("Orphans removed! Your system is sparkling now. ^-^")
             else:
@@ -295,6 +305,17 @@ def clean():
 
     except subprocess.CalledProcessError:
         print_message("Your system is already clean! No orphan packages found. <3")
+
+def clean():
+    """Find and removes pacman cache"""
+    print_message("Let's tidy up your system and remove some left over cache!~")
+    confirm()
+    command = "sudo pacman --noconfirm -Sc"
+    if run_command(command) == 0:
+        print_message("Cache cleaned! Your system is sparkling now. ^_^")
+    else:
+        print_message("An error occurred while cleaning cache. Please check the output. :(")
+
 
 # --- Main Function ---
 
@@ -320,8 +341,12 @@ def main():
     # Update command
     update_parser = subparsers.add_parser("update", help=f"Update all {colorize('packages', 'pink')} on the system.")
 
+    # Cleano command
+    clean_parser = subparsers.add_parser("cleano", help=f"Remove all {colorize('orphan packages', 'pink')}.")
+
     # Clean command
-    clean_parser = subparsers.add_parser("clean", help=f"Remove all {colorize('orphan packages', 'pink')}.")
+    clean_parser = subparsers.add_parser("clean", help=f"Clean all {colorize('cache', 'pink')}.")
+
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -337,6 +362,8 @@ def main():
         search(args.query)
     elif args.command == "update":
         update()
+    elif args.command == "cleano":
+        cleano()
     elif args.command == "clean":
         clean()
 
