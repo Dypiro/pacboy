@@ -23,7 +23,11 @@ To install `pacboy`:
     ```bash
     cd pacboy
     ```
-3.  Run the installation script:
+3. Make the script executable
+   ```bash
+   chmod +x install.sh
+   ```
+4.  Run the installation script:
     ```bash
     ./install.sh
     ```
@@ -48,8 +52,16 @@ pacboy <command> [arguments]
 *   `pacboy fremove <package(s)>`: Remove one or more packages forcefully.
 *   `pacboy search <query>`: Search for packages interactively.
 *   `pacboy update`: Update all packages on the system.
-*   `pacboy oclean`: Remove all orphan packages.
-*   `pacboy clean`: Clean cache.
+*   `pacboy clean`: Purge pacman cache.
+*   `pacboy cleano`: Remove orphan packages.
+
+## Zsh Compatibility
+
+`pacboy` works seamlessly with Zsh. After installation, ensure that `~/.local/bin` is in your `PATH`. If it's not already, add the following line to your `.zshrc` file:
+
+```zsh
+export PATH="$HOME/.local/bin:$PATH"
+```
 
 ## Contributing
 
